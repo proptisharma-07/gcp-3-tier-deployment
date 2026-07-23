@@ -1,14 +1,16 @@
+const API = "http://34.93.136.32:3000";
+
 const form = document.getElementById("studentForm");
 const studentList = document.getElementById("studentList");
 
-async function loadStudents(){
+async function loadStudents() {
 
-    const res = await fetch("/students");
+    const res = await fetch(API + "/students");
     const students = await res.json();
 
-    studentList.innerHTML="";
+    studentList.innerHTML = "";
 
-    students.forEach(student=>{
+    students.forEach(student => {
 
         studentList.innerHTML += `
         <tr>
@@ -26,22 +28,22 @@ async function loadStudents(){
 
 }
 
-form.addEventListener("submit",async(e)=>{
+form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const name=document.getElementById("name").value;
-    const email=document.getElementById("email").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
 
-    await fetch("/students",{
+    await fetch(API + "/students", {
 
-        method:"POST",
+        method: "POST",
 
-        headers:{
-            "Content-Type":"application/json"
+        headers: {
+            "Content-Type": "application/json"
         },
 
-        body:JSON.stringify({
+        body: JSON.stringify({
             name,
             email
         })
@@ -54,10 +56,10 @@ form.addEventListener("submit",async(e)=>{
 
 });
 
-async function deleteStudent(id){
+async function deleteStudent(id) {
 
-    await fetch("/students/"+id,{
-        method:"DELETE"
+    await fetch(API + "/students/" + id, {
+        method: "DELETE"
     });
 
     loadStudents();
