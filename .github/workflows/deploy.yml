@@ -1,0 +1,40 @@
+name: Deploy Student App (Dev)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to GCP Dev VM
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          port: 22
+
+          script: |
+            cd /home/propti/student-management
+
+            echo "Pulling latest code..."
+            git checkout dev
+            git pull origin dev
+
+            echo "Installing packages..."
+            npm install
+
+            echo "Restarting PM2..."
+            pm2 restart student-app || pm2 start server.js --name student-app
+
+            pm2 save
+
+            echo "Deployment Successful"
