@@ -1,9 +1,9 @@
-name: Deploy Student App (Dev)
+name: Deploy Student App (QA)
 
 on:
   push:
     branches:
-      - dev
+      - qa
 
 jobs:
   deploy:
@@ -13,28 +13,51 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy to GCP Dev VM
+      - name: Deploy Backend to GCP QA VM
         uses: appleboy/ssh-action@v1.0.3
 
         with:
-          host: ${{ secrets.GCP_HOST }}
-          username: ${{ secrets.GCP_USER }}
-          key: ${{ secrets.GCP_SSH_KEY }}
+          host: ${{ secrets.QA_BACKEND_HOST }}
+          username: ${{ secrets.QA_USER }}
+          key: ${{ secrets.QA_SSH_KEY }}
           port: 22
 
           script: |
-            cd /home/propti/student-management
+            cd /home/propti/gcp-3-tier-deployment
 
             echo "Pulling latest code..."
-            git checkout dev
-            git pull origin dev
+            git checkout qa
+            git pull origin qa
 
             echo "Installing packages..."
             npm install
 
-            echo "Restarting PM2..."
-            pm2 restart student-app || pm2 start server.js --name student-app
+            echo "Restarting Backend..."
+            pm2 restart student-app-qa || pm2 start server.js --name student-app-qa
 
             pm2 save
 
-            echo "Deployment Successful"
+            echo "Backend Deployment Successful"
+
+      - name: Deploy Frontend to GCP QA VM
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.QA_FRONTEND_HOST }}
+          username: ${{ secrets.QA_USER }}
+          key: ${{ secrets.QA_SSH_KEY }}
+          port: 22
+
+          script: |
+            cd /home/propti/gcp-3-tier-deployment
+
+            echo "Pulling latest code..."
+            git checkout qa
+            git pull origin qa
+
+            echo "Restarting Frontend..."
+            pm2 restart frontend-qa
+
+            pm2 save
+
+            echo "Frontend Deployment Successful"
