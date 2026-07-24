@@ -1,0 +1,43 @@
+name: Deploy Student App (PROD)
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Backend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_BACKEND_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/propti/gcp-3-tier-deployment
+            git checkout prod
+            git pull origin prod
+            npm install
+            pm2 restart student-app-prod || pm2 start server.js --name student-app-prod
+            pm2 save
+
+      - name: Deploy Frontend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_FRONTEND_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/propti/gcp-3-tier-deployment
+            git checkout prod
+            git pull origin prod
+            pm2 restart frontend-prod || pm2 serve public 3000 --name frontend-prod
+            pm2 save
