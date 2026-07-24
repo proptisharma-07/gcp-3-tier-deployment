@@ -1,3 +1,4 @@
+const API = "http://34.100.120.55:3000";
 const form = document.getElementById("studentForm");
 const studentList = document.getElementById("studentList");
 
